@@ -21,29 +21,92 @@
 
 #include "zebraPuzzle.h"
 
-versionInfo: GameID
-        name = 'zebraPuzzle Library Demo Game'
-        byline = 'Diegesis & Mimesis'
-        desc = 'Demo game for the zebraPuzzle library. '
-        version = '1.0'
-        IFID = '12345'
-	showAbout() {
-		"This is a simple test game that demonstrates the features
-		of the zebraPuzzle library.
-		<.p>
-		Consult the README.txt document distributed with the library
-		source for a quick summary of how to use the library in your
-		own games.
-		<.p>
-		The library source is also extensively commented in a way
-		intended to make it as readable as possible. ";
-	}
-;
-gameMain: GameMainDef
-	initialPlayerChar = me
-	inlineCommand(cmd) { "<b>&gt;<<toString(cmd).toUpper()>></b>"; }
-	printCommand(cmd) { "<.p>\n\t<<inlineCommand(cmd)>><.p> "; }
+zebraConfig: ZebraPuzzleConfig
+	variables = [
+		'brand' ->
+			[ 'Old Gold', 'Kool', 'Chesterfield', 'Lucky Strike',
+				'Parliament' ],
+		'color' ->
+			[ 'red', 'green', 'ivory', 'yellow', 'blue' ],
+		'country' ->
+			[ 'England', 'Spain', 'Ukraine', 'Norway', 'Japan' ],
+		'drink' ->
+			[ 'coffee', 'tea', 'milk', 'orange juice', 'water' ],
+		'pet' ->
+			[ 'dog', 'snails', 'fox', 'horse', 'zebra' ]
+	]
+
+	constraints = [
+		[ 'England', 'red' ],
+		[ 'Spain', 'dog' ],
+		[ 'coffee', 'green' ],
+		[ 'Ukraine', 'tea' ],
+		[ 'green', 'ivory',
+			{ a, b: a == b + 1 } ],
+		[ 'Old Gold', 'snails' ],
+		[ 'Kool', 'yellow' ],
+		[ 'milk', 3 ],
+		[ 'Norway', 1 ],
+		[ 'Chesterfield', 'fox',
+			{ a, b: abs(a - b) == 1 } ],
+		[ 'Kool', 'horse',
+			{ a, b: abs(a - b) == 1 } ],
+		[ 'Lucky Strike', 'orange juice' ],
+		[ 'Japan', 'Parliament' ],
+		[ 'Norway', 'blue',
+			{ a, b: abs(a - b) == 1 } ]
+	]
 ;
 
-startRoom: Room 'Void' "This is a featureless void.";
-+me: Person;
+versionInfo: GameID;
+gameMain: GameMainDef
+	_error(txt) { _log('ERROR: <<toString(txt)>>'); }
+	_log(txt) { "\n<<toString(txt)>>\n "; }
+	newGame() {
+		local g, r, str;
+
+		g = new ZebraPuzzle(zebraConfig);
+
+		if(!g.initZebraPuzzle()) {
+			_error('init failed');
+			g._zlogErrors();
+			return;
+		}
+
+		_log('===init start===');
+		g.logState();
+		_log('===init end===');
+
+		g._checkUnaryConstraints();
+
+		_log('===init start===');
+		g.logState();
+		_log('===init end===');
+
+		if((r = g.solve()) != true) {
+			_error('solve() failed');
+			g._zlogErrors();
+			return;
+		}
+
+		r = 1;
+		if(r == 1)
+			return;
+		if((r = g.getSolutions()) != true) {
+			_error('getSolutions() failed');
+			g._zlogErrors();
+			return;
+		}
+
+		"\n<<toString(r.length)>> possible solutions\n ";
+		if(r.length > 10)
+			return;
+		str = new StringBuffer();
+		r.forEach(function(x) {
+			x.forEachAssoc({ k, v: str.append('<<toString(k)>> is
+				<<toString(v)>> ') });
+			str.append('\n');
+		});
+		"\n<<toString(str)>>\n ";
+	}
+;
