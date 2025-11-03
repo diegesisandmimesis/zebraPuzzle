@@ -15,6 +15,38 @@ class ZebraPuzzleConfig: object
 
 	solution = nil
 
+	addVariable(grp, id) {
+		if(variables == nil)
+			variables = new LookupTable();
+		if(variables[grp] == nil)
+			variables[grp] = new Vector();
+		if(isList(variables[grp]))
+			variables[grp] = new Vector(variables[grp]);
+
+		if(isCollection(id)) {
+			id.forEach({ x: variables[grp].append(x) });
+		} else {
+			variables[grp].append(id);
+		}
+
+		return(true);
+	}
+
+	addConstraint([args]) {
+		if(constraints == nil)
+			constraints = new Vector();
+		if(isList(constraints))
+			constraints = new Vector(constraints);
+		if(args.length == 2)
+			constraints.append([ args[1], args[2] ]);
+		else if(args.length == 3)
+			constraints.append([ args[1], args[2], args[3] ]);
+		else
+			return(nil);
+
+		return(true);
+	}
+
 	validate() {
 		if((variables == nil) || (constraints == nil))
 			return(nil);

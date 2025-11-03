@@ -1,6 +1,6 @@
 # zebraPuzzle
 
-A TADS3/adv3 module for FIXME.
+A TADS3/adv3 module for solving Zebra Puzzles.
 
 ## Description
 
@@ -12,7 +12,8 @@ A TADS3/adv3 module for FIXME.
 * [Compiling and Running Demos](#running)
 
 [Classes](#classes)
-* [ClassName](#class-name)
+* [ZebraPuzzle](#zebra-puzzle)
+* [ZebraPuzzleConfig](#zebra-puzzle-config)
 
 [Examples](#examples)
 
@@ -78,12 +79,12 @@ is installed in ``/home/username/tads/fastPath/``, enter the directory with:
 ```
 Then make one of the demos, for example:
 ```
-# make -a -f FIXME.t3m
+# make -a -f makefile.t3m
 ```
 This should produce a bunch of output from the compiler but no errors.  When
 it is done you can run the demo from the same directory with:
 ```
-# frob games/FIXME.t3
+# frob games/game.t3
 ```
 In general the name of the makefile and the name of the compiled story file
 will be the same except for the extensions (``.t3m`` for makefiles and
