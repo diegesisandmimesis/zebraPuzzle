@@ -339,7 +339,7 @@ It will consist of an array of ``LookupTable`` instances with each
 
 
 In addition to how the configuration was declared above, you can create
-an empty config and add to it programatically.  For example:
+an empty config and add to it programmatically.  For example:
 ```
     local cfg = new ZebraPuzzleConfig();
 
