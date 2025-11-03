@@ -23,15 +23,15 @@
 
 zebraConfig: ZebraPuzzleConfig
 	variables = [
-		'brand' ->
-			[ 'Old Gold', 'Kool', 'Chesterfield', 'Lucky Strike',
-				'Parliament' ],
 		'color' ->
 			[ 'red', 'green', 'ivory', 'yellow', 'blue' ],
 		'country' ->
 			[ 'England', 'Spain', 'Ukraine', 'Norway', 'Japan' ],
 		'drink' ->
 			[ 'coffee', 'tea', 'milk', 'orange juice', 'water' ],
+		'brand' ->
+			[ 'Old Gold', 'Kool', 'Chesterfield', 'Lucky Strike',
+				'Parliament' ],
 		'pet' ->
 			[ 'dog', 'snails', 'fox', 'horse', 'zebra' ]
 	]

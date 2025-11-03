@@ -2,22 +2,30 @@
 //
 // zebraPuzzle.t
 //
+//	Extension to the AC-3 class in the dataTypes module that
+//	handles Zebra Puzzles.
+//
 #include <adv3.h>
 #include <en_us.h>
 
 #include "zebraPuzzle.h"
 
+// Update the base class to have a vertexGroup.  This is what identies
+// related variables.  If individual variables are things like "red", "green",
+// and "blue", then the vertex group might be "color", and so on.
 modify AC3Variable
 	vertexGroup = nil
 ;
 
 class ZebraPuzzle: AC3
-	_zebraConfig = nil
+	_zebraConfig = nil		// puzzle config
 
 	construct(obj?) {
 		setZebraConfig(obj);
 	}
 
+	// Getter and setter for the config.  The setter validates the
+	// config before setting it.
 	getZebraConfig() { return(_zebraConfig); }
 	setZebraConfig(obj) {
 		if(!isZebraPuzzleConfig(obj))
@@ -30,9 +38,12 @@ class ZebraPuzzle: AC3
 		return(true);
 	}
 
+	// Getter and setter for the state.
+	// Used in backtracking.
 	getZebraState() { return(new ZebraPuzzleState(self)); }
 	setZebraState(obj) { return(obj.restoreState(self)); }
 
+	// Tweak the stock method to add the vertex group.
 	addVariable(id, domain, grp?) {
 		local r;
 
@@ -44,6 +55,10 @@ class ZebraPuzzle: AC3
 		return(r);
 	}
 
+	// Zebra puzzle-specific constraints.
+	// The three-argument version is a standard constraint, the
+	// two-argument form is a convenience method that creates the
+	// check function automagically.
 	addZebraConstraint([args]) {
 		if(args.length == 2)
 			return(assignment(args[1], args[2]));
@@ -53,6 +68,12 @@ class ZebraPuzzle: AC3
 		return(nil);
 	}
 
+	// Zebra puzzle-specific constrant types.
+	// Takes two arguments.  If the second is an integer, it assigns
+	// the value of the variable ("The middle house is red" or something
+	// like that).  If it isn't, then it's treated as the assertion that
+	// the two variables have the same value ("Milk is drunk in the red
+	// house" or something like that).
 	assignment(v0, v1) {
 		if(isInteger(v1)) {
 			return(_addUnaryConstraint(v0, { x: x == v1 }));
@@ -61,6 +82,7 @@ class ZebraPuzzle: AC3
 		}
 	}
 
+	/*
 	_checkBinaryConstraints() {
 		local ac3Queue, v;
 
@@ -88,7 +110,10 @@ class ZebraPuzzle: AC3
 
 		return(true);
 	}
+	*/
 
+	// Initialization method(s).
+	// Called by solve().
 	initZebraPuzzle() {
 		if(!_initZebraVariables()) {
 			_zerror('failed to initialize variables');
@@ -106,6 +131,7 @@ class ZebraPuzzle: AC3
 		return(true);
 	}
 
+	// Use the set configuration to build the variable vertices.
 	_initZebraVariables() {
 		local cfg, err;
 
@@ -127,6 +153,9 @@ class ZebraPuzzle: AC3
 		return(!err);
 	}
 
+	// Initialize the constraints.
+	// This includes the constraints explicitly declared in the config
+	// as well as the implicit ones from the overall puzzle design.
 	_initZebraConstraints() {
 		local cfg;
 
@@ -134,15 +163,18 @@ class ZebraPuzzle: AC3
 		if(!isZebraPuzzleConfig(cfg))
 			return(nil);
 
+		// The declared constraints.
 		if(!_initZebraConstraintsBasic(cfg))
 			return(nil);
 
+		// The implicit constraints.
 		if(!_initZebraConstraintsImplicit(cfg))
 			return(nil);
 
 		return(true);
 	}
 
+	// Set up the declared constaints.
 	_initZebraConstraintsBasic(cfg) {
 		local err;
 
@@ -158,6 +190,13 @@ class ZebraPuzzle: AC3
 		return(!err);
 	}
 
+	// Create the implicit constraints.
+	// By default we assume that the value of each variable in a
+	// vertex group is unique.  That is, if we have a group "colors"
+	// containing variables "red", "green", and "blue" and we're assigning
+	// them to houses/values 1, 2, and 3, the assumption is that
+	// the red house is not ALSO the green house.  In other words, if
+	// red = 1, green != 1 and blue != 1.
 	_initZebraConstraintsImplicit(cfg) {
 		local err;
 
@@ -170,6 +209,9 @@ class ZebraPuzzle: AC3
 		return(!err);
 	}
 
+	// Create a single implicit constraint.
+	// First arg is a variable ID, second is a list of all the other
+	// variables in the same group.
 	_initImplicitConstraint(id, lst) {
 		local err, i, j;
 
@@ -190,12 +232,17 @@ class ZebraPuzzle: AC3
 		return(!err);
 	}
 
+	// Replacement solve() method.
+	// We handle initialization, applying constraints via AC-3, and then
+	// using simple backtracking if we have to.
 	solve() {
 		if(!initZebraPuzzle()) {
 			_zerror('puzzle init failed');
 			return(nil);
 		}
 
+		// Apply the unary constraints.  These "just" reduce the
+		// domain of individual variables.
 		if(!_checkUnaryConstraints()) {
 			_zerror('unary constraints failed');
 			return(nil);
@@ -204,6 +251,7 @@ class ZebraPuzzle: AC3
 		_zlog('after unary constraints:');
 		logState();
 
+		// Apply the binary constraints.
 		if(!_checkBinaryConstraints()) {
 			_zerror('binary constraints failed');
 			return(nil);
@@ -212,6 +260,9 @@ class ZebraPuzzle: AC3
 		_zlog('after binary constraints:');
 		logState();
 
+		// Keep pruning domains and re-applying the binary constraints
+		// as long as pruning reduces the domain of at least one
+		// variable.
 		while(_pruneDomains()) {
 			_checkBinaryConstraints();
 		}
@@ -219,6 +270,8 @@ class ZebraPuzzle: AC3
 		_zlog('after pruning:');
 		logState();
 
+		// Now use backtracking until we find a solution or run
+		// out of things to try.
 		if(!_backtrack())
 			return(nil);
 
@@ -228,6 +281,8 @@ class ZebraPuzzle: AC3
 		return(getSolution());
 	}
 
+	// Returns boolean true if the current state is a/the solution.
+	// That is, if all variables' domains are a single element.
 	isSolved() {
 		local b;
 
@@ -239,9 +294,14 @@ class ZebraPuzzle: AC3
 		return(b);
 	}
 
+	// Backtracking method.
+	// Called recursively.
 	_backtrack() {
 		local err, i, j, l, state, v;
 
+		// First, prune and apply our constraints.
+		// If this produces an error, return nil, which
+		// should cause the caller to backtrack.
 		err = nil;
 		while(_pruneDomains() && (err == nil)) {
 			if(!_checkBinaryConstraints())
@@ -250,24 +310,54 @@ class ZebraPuzzle: AC3
 		if(err == true)
 			return(nil);
 
-		if(isSolved()) return(true);
+		// If we now have a solution, hurray.  We're done.
+		if(isSolved())
+			return(true);
 
+		// Iterate over all vertices.
 		l = getVertices();
 		for(j = 1; j <= l.length; j++) {
 			v = l[j];
-			if(v.domain.length == 1) continue;
+
+			// Skip vertices whose domain contains a single
+			// element:  they're already solved.
+			if(v.domain.length == 1)
+				continue;
+
+			// Iterate over all remaining values in our domain.
 			for(i = 1; i <= v.domain.length; i++) {
+				// Remember the current state.
 				state = getZebraState();
+
+				// Try reducing our domain to a single
+				// value.
 				v.domain = new Vector([ v.domain[i] ]);
+
+				// Recurse.  If this eventually finds
+				// the solution, we'll get true back.
+				// If that happens, we're done.
 				if(_backtrack() == true)
 					return(true);
+
+				// The recursive checking failed, meaning
+				// the assignment we just tried was a dead
+				// end.  Revert the state, continue to the
+				// next option.
 				setZebraState(state);
 			}
 		}
 
+		// Oh no, out of options.  Fail.
 		return(nil);
 	}
 
+	// Prune variable domains.
+	// We check vertex groups for variables which have an element
+	// in their domain that's in the domain of no other variable
+	// in the group.  That implies that the unique value is the assignment
+	// for that variable--it couldn't be any other variable in the
+	// group, and each value must be assigned to one of the variables
+	// in each group.
 	_pruneDomains() {
 		local cfg, r;
 
@@ -283,6 +373,7 @@ class ZebraPuzzle: AC3
 		return(r);
 	}
 
+	// Prune a single vertex group.
 	_pruneVariableDomain(id, lst) {
 		local l, r, t;
 
@@ -330,6 +421,11 @@ class ZebraPuzzle: AC3
 		return(r);
 	}
 
+	// Returns the solution as an array of hash tables.
+	// For example, for the classic zebra problem this will return
+	// a five-element array, each element representing one house.
+	// Each hash table will look like [ 'color' -> 'yellow',
+	// 'drink' -> 'water', 'pet -> 'fox' ] and so on.
 	getSolution() {
 		local cfg, r;
 
@@ -347,6 +443,7 @@ class ZebraPuzzle: AC3
 		return(r);
 	}
 
+	// Stubs for debugging.
 	_zerror(txt) {}
 	_zlog(txt) {}
 	_zlogErrors() {}
