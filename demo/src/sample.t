@@ -41,20 +41,16 @@ zebraConfig: ZebraPuzzleConfig
 		[ 'Spain', 'dog' ],
 		[ 'coffee', 'green' ],
 		[ 'Ukraine', 'tea' ],
-		[ 'green', 'ivory',
-			{ a, b: a == b + 1 } ],
+		[ 'green', 'ivory', { a, b: a == b + 1 } ],
 		[ 'Old Gold', 'snails' ],
 		[ 'Kool', 'yellow' ],
 		[ 'milk', 3 ],
 		[ 'Norway', 1 ],
-		[ 'Chesterfield', 'fox',
-			{ a, b: abs(a - b) == 1 } ],
-		[ 'Kool', 'horse',
-			{ a, b: abs(a - b) == 1 } ],
+		[ 'Chesterfield', 'fox', { a, b: abs(a - b) == 1 } ],
+		[ 'Kool', 'horse', { a, b: abs(a - b) == 1 } ],
 		[ 'Lucky Strike', 'orange juice' ],
 		[ 'Japan', 'Parliament' ],
-		[ 'Norway', 'blue',
-			{ a, b: abs(a - b) == 1 } ]
+		[ 'Norway', 'blue', { a, b: abs(a - b) == 1 } ]
 	]
 ;
 
@@ -63,7 +59,7 @@ gameMain: GameMainDef
 	_error(txt) { _log('ERROR: <<toString(txt)>>'); }
 	_log(txt) { "\n<<toString(txt)>>\n "; }
 	newGame() {
-		local g, i, r, str;
+		local g, r;
 
 		g = new ZebraPuzzle(zebraConfig);
 
@@ -73,14 +69,6 @@ gameMain: GameMainDef
 			return;
 		}
 
-		str = new StringBuffer();
-		for(i = 1; i <= r.length; i++) {
-			str.append('House #<<toString(i)>>:\n ');
-			r[i].forEachAssoc({ k, v:
-				str.append('\t<<toString(k)>>: <<toString(v)>>\n ')
-			});
-			str.append('\n');
-		}
-		"\n<<toString(str)>>\n ";
+		r.log();
 	}
 ;

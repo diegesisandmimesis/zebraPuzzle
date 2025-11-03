@@ -63,7 +63,7 @@ gameMain: GameMainDef
 	_error(txt) { _log('ERROR: <<toString(txt)>>'); }
 	_log(txt) { "\n<<toString(txt)>>\n "; }
 	newGame() {
-		local cfg, g, i, r, str;
+		local cfg, g, r;
 
 		cfg = new ZebraPuzzleConfig();
 
@@ -113,14 +113,6 @@ gameMain: GameMainDef
 			return;
 		}
 
-		str = new StringBuffer();
-		for(i = 1; i <= r.length; i++) {
-			str.append('House #<<toString(i)>>:\n ');
-			r[i].forEachAssoc({ k, v:
-				str.append('\t<<toString(k)>>: <<toString(v)>>\n ')
-			});
-			str.append('\n');
-		}
-		"\n<<toString(str)>>\n ";
+		r.log();
 	}
 ;

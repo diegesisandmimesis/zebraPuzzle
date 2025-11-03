@@ -13,8 +13,6 @@ class ZebraPuzzleConfig: object
 
 	domain = nil
 
-	solution = nil
-
 	addVariable(grp, id) {
 		if(variables == nil)
 			variables = new LookupTable();

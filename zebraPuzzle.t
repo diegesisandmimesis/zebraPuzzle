@@ -19,6 +19,7 @@ modify AC3Variable
 
 class ZebraPuzzle: AC3
 	_zebraConfig = nil		// puzzle config
+	_zebraSolution = nil		// solution, if found
 
 	construct(obj?) {
 		setZebraConfig(obj);
@@ -236,6 +237,8 @@ class ZebraPuzzle: AC3
 	// We handle initialization, applying constraints via AC-3, and then
 	// using simple backtracking if we have to.
 	solve() {
+		_zebraSolution = nil;
+
 		if(!initZebraPuzzle()) {
 			_zerror('puzzle init failed');
 			return(nil);
@@ -427,20 +430,16 @@ class ZebraPuzzle: AC3
 	// Each hash table will look like [ 'color' -> 'yellow',
 	// 'drink' -> 'water', 'pet -> 'fox' ] and so on.
 	getSolution() {
-		local cfg, r;
+		if(_zebraSolution != nil)
+			return(_zebraSolution);
 
-		if(!isSolved()) return(nil);
-		if((cfg = getZebraConfig()) == nil) return(nil);
+		if(!isSolved())
+			return(nil);
 
-		r = Vector.generate({ x: new LookupTable() },
-			cfg.domain.length);
+		_zebraSolution = new ZebraPuzzleSolution(getZebraConfig(),
+			self);
 
-		forEachVertex(function(v) {
-			r[v.domain[1]][cfg.variableToGroup(v.vertexID)]
-				= v.vertexID;
-		});
-
-		return(r);
+		return(_zebraSolution);
 	}
 
 	// Stubs for debugging.
