@@ -1,6 +1,6 @@
 #charset "us-ascii"
 //
-// zebraPuzzle.t
+// zebraPuzzleModInfo.t
 //
 #include <adv3.h>
 #include <en_us.h>

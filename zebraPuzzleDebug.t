@@ -1,6 +1,9 @@
 #charset "us-ascii"
 //
-// zebraPuzzle.t
+// zebraPuzzleDebug.t
+//
+//	Debugging methods.  Only used when compiled with -d.
+//
 //
 #include <adv3.h>
 #include <en_us.h>
@@ -16,6 +19,7 @@ modify ZebraPuzzle
 
 	_zlogErrors() { _zErrorBuffer.forEach({ x: _zlog(x) }); }
 
+	// Print a simple (ugly) banner for the state output.
 	_zlogStateHeading() {
 		local l, str, r;
 
@@ -29,6 +33,11 @@ modify ZebraPuzzle
 		_log(toString(str));
 	}
 
+	// Output the current state schematically.  Output will be
+	// grouped numbers, like:
+	//	13434 21231 31334 32113 41433
+	// The numbers are the domain sizes for the variables, grouped
+	// by vertex group.
 	logState(head?) {
 		local g, l, str;
 

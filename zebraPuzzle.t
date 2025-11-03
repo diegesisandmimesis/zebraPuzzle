@@ -5,6 +5,7 @@
 //	Extension to the AC-3 class in the dataTypes module that
 //	handles Zebra Puzzles.
 //
+//
 #include <adv3.h>
 #include <en_us.h>
 

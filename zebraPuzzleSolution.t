@@ -2,13 +2,16 @@
 //
 // zebraPuzzleSolution.t
 //
+//	Data structure for zebra puzzle solutions
+//
+//
 #include <adv3.h>
 #include <en_us.h>
 
 #include "zebraPuzzle.h"
 
 class ZebraPuzzleSolution: object
-	data = nil
+	data = nil		// array of tables contain the solution
 
 	construct(cfg, obj) {
 		validate(cfg, obj);

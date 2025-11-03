@@ -1,6 +1,6 @@
 #charset "us-ascii"
 //
-// zebraPuzzle.t
+// zebraPuzzleConfig.t
 //
 #include <adv3.h>
 #include <en_us.h>
@@ -8,10 +8,10 @@
 #include "zebraPuzzle.h"
 
 class ZebraPuzzleConfig: object
-	variables = nil
-	constraints = nil
+	variables = nil		// LookupTable of variables
+	constraints = nil	// List of constraints
 
-	domain = nil
+	domain = nil		// Computed domain
 
 	addVariable(grp, id) {
 		if(variables == nil)
