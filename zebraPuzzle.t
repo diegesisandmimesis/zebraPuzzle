@@ -30,6 +30,9 @@ class ZebraPuzzle: AC3
 		return(true);
 	}
 
+	getZebraState() { return(new ZebraPuzzleState(self)); }
+	setZebraState(obj) { return(obj.restoreState(self)); }
+
 	addVariable(id, domain, grp?) {
 		local r;
 
@@ -96,6 +99,9 @@ class ZebraPuzzle: AC3
 			_zerror('failed to initialize constraints');
 			return(nil);
 		}
+
+		_zlog('after initialization:');
+		logState();
 
 		return(true);
 	}
@@ -182,6 +188,163 @@ class ZebraPuzzle: AC3
 		}
 
 		return(!err);
+	}
+
+	solve() {
+		if(!initZebraPuzzle()) {
+			_zerror('puzzle init failed');
+			return(nil);
+		}
+
+		if(!_checkUnaryConstraints()) {
+			_zerror('unary constraints failed');
+			return(nil);
+		}
+
+		_zlog('after unary constraints:');
+		logState();
+
+		if(!_checkBinaryConstraints()) {
+			_zerror('binary constraints failed');
+			return(nil);
+		}
+
+		_zlog('after binary constraints:');
+		logState();
+
+		while(_pruneDomains()) {
+			_checkBinaryConstraints();
+		}
+
+		_zlog('after pruning:');
+		logState();
+
+		if(!_backtrack())
+			return(nil);
+
+		_zlog('after backtracking:');
+		logState();
+
+		return(getSolution());
+	}
+
+	isSolved() {
+		local b;
+
+		b = true;
+		forEachVertex(function(x) {
+			if(x.domain.length != 1) b = nil;
+		});
+
+		return(b);
+	}
+
+	_backtrack() {
+		local err, i, j, l, state, v;
+
+		err = nil;
+		while(_pruneDomains() && (err == nil)) {
+			if(!_checkBinaryConstraints())
+				err = true;
+		}
+		if(err == true)
+			return(nil);
+
+		if(isSolved()) return(true);
+
+		l = getVertices();
+		for(j = 1; j <= l.length; j++) {
+			v = l[j];
+			if(v.domain.length == 1) continue;
+			for(i = 1; i <= v.domain.length; i++) {
+				state = getZebraState();
+				v.domain = new Vector([ v.domain[i] ]);
+				if(_backtrack() == true)
+					return(true);
+				setZebraState(state);
+			}
+		}
+
+		return(nil);
+	}
+
+	_pruneDomains() {
+		local cfg, r;
+
+		cfg = getZebraConfig();
+		if(!isZebraPuzzleConfig(cfg))
+			return(nil);
+
+		r = nil;
+		cfg.forEachVariable(function(k, v) {
+			if(_pruneVariableDomain(k, v)) r = true;
+		});
+
+		return(r);
+	}
+
+	_pruneVariableDomain(id, lst) {
+		local l, r, t;
+
+		// Get all vertices in the given group.
+		l = getVertices().subset({ x: x.vertexGroup == id });
+
+		// Build a hash table.  Keys are elements of the domain,
+		// values are vectors containing all vertices with that
+		// value in its domain.
+		t = new LookupTable();
+		l.forEach(function(x) {
+			x.domain.forEach(function(y) {
+				if(t[y] == nil) t[y] = new Vector();
+				t[y].appendUnique(x);
+			});
+		});
+
+		r = nil;
+
+		// Any value in the table with length 1 is a vertex with
+		// an element in its domain that IS NOT in any other domain
+		// in the group.  That implies that the element is the
+		// assignment for this vertex.
+		t.forEachAssoc(function(k, v) {
+			if(v.length != 1) return;
+
+			// If the domain is already a single element we
+			// have nothing to do.
+			if(v[1].domain.length == 1) return;
+
+			// Clear the domain of everything except the unique
+			// element.
+			v[1].domain = v[1].domain.subset({ x: x == k });
+
+			// Mark that we updated something.
+			// We can't really do anything directly--we can't
+			// remove the element from the other domains, for
+			// example, because we know it' already isn't
+			// in them (that's why we're here).  But clearing
+			// out this vertex's domain might make someone
+			// else pass this check if we run it again.
+			r = true;
+		});
+
+		return(r);
+	}
+
+	getSolution() {
+		local cfg, r;
+
+		if(!isSolved()) return(nil);
+		if((cfg = getZebraConfig()) == nil) return(nil);
+
+		r = Vector.generate({ x: new LookupTable() },
+			cfg.domain.length);
+
+		forEachVertex(function(v) {
+			r[v.domain[1]][cfg.variableToGroup(v.vertexID)]
+				= v.vertexID;
+		});
+
+		return(r);
 	}
 
 	_zerror(txt) {}

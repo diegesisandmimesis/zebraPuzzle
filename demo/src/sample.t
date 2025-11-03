@@ -63,50 +63,24 @@ gameMain: GameMainDef
 	_error(txt) { _log('ERROR: <<toString(txt)>>'); }
 	_log(txt) { "\n<<toString(txt)>>\n "; }
 	newGame() {
-		local g, r, str;
+		local g, i, r, str;
 
 		g = new ZebraPuzzle(zebraConfig);
 
-		if(!g.initZebraPuzzle()) {
-			_error('init failed');
-			g._zlogErrors();
-			return;
-		}
-
-		_log('===init start===');
-		g.logState();
-		_log('===init end===');
-
-		g._checkUnaryConstraints();
-
-		_log('===init start===');
-		g.logState();
-		_log('===init end===');
-
-		if((r = g.solve()) != true) {
+		if((r = g.solve()) == nil) {
 			_error('solve() failed');
 			g._zlogErrors();
 			return;
 		}
 
-		r = 1;
-		if(r == 1)
-			return;
-		if((r = g.getSolutions()) != true) {
-			_error('getSolutions() failed');
-			g._zlogErrors();
-			return;
-		}
-
-		"\n<<toString(r.length)>> possible solutions\n ";
-		if(r.length > 10)
-			return;
 		str = new StringBuffer();
-		r.forEach(function(x) {
-			x.forEachAssoc({ k, v: str.append('<<toString(k)>> is
-				<<toString(v)>> ') });
+		for(i = 1; i <= r.length; i++) {
+			str.append('House #<<toString(i)>>:\n ');
+			r[i].forEachAssoc({ k, v:
+				str.append('\t<<toString(k)>>: <<toString(v)>>\n ')
+			});
 			str.append('\n');
-		});
+		}
 		"\n<<toString(str)>>\n ";
 	}
 ;

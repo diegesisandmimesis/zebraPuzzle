@@ -13,6 +13,8 @@ class ZebraPuzzleConfig: object
 
 	domain = nil
 
+	solution = nil
+
 	validate() {
 		if((variables == nil) || (constraints == nil))
 			return(nil);
@@ -59,5 +61,17 @@ class ZebraPuzzleConfig: object
 	forEachConstraint(fn) {
 		if(constraints == nil) return;
 		constraints.forEach({ x: (fn)(x) });
+	}
+
+	variableToGroup(id) {
+		local i, l;
+
+		if(variables == nil) return(nil);
+		l = variables.keysToList();
+		for(i = 1; i <= l.length; i++) {
+			if(variables[l[i]].indexOf(id) != nil)
+				return(l[i]);
+		}
+		return(nil);
 	}
 ;
