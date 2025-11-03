@@ -208,6 +208,8 @@ The classic Zebbra Puzzle is (quoting from wikipedia):
 14. The Japanese smokes Parliaments.
 15. The Norwegian lives next to the blue house.
 
+Now, who drinks water? Who owns the zebra?
+
 This can be solved first by converting it into a ``ZebraPuzzleConfig``:
 ```
 zebraConfig: ZebraPuzzleConfig
